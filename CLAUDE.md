@@ -24,7 +24,7 @@ Bewust zonder build-stap: gewone HTML/CSS/JS, direct te hosten (Vercel, GitHub P
 | `supabase/schema.sql` | Tabel, RLS-regels, realtime, opslagbucket voor etiketfoto's |
 
 ### store-API (`window.store`)
-`init()`, `needsLogin()`, `signIn(email)`, `signOut()`, `newId()`,
+`init()`, `needsLogin()`, `signIn(email, password)`, `signOut()`, `newId()`,
 `set(col,id,data)`, `update(col,id,patch)`, `remove(col,id)`,
 `watch(col, cb(list))`, `watchDoc(col,id, cb(data|null))`,
 `uploadPhoto(file) → ref`, `photoUrl(ref)`, `exportAll()`, `importAll(data)`, `authToken()`.
@@ -56,6 +56,11 @@ Documenten per collectie (in Supabase: tabel `docs(collection, id, data jsonb)`)
 - Etiket scannen: knop "Foto" (header) of "Foto van etiket" in het formulier → `scanLabel()` verkleint de foto, stuurt hem als data-URL naar `/api/claude` en vult het formulier via `fillForm()` (alleen lege velden of standaardwaarden). De foto wordt ook de etiketfoto van de fles.
 - Webzoeken: `/api/claude` met `web:true` geeft Claude de web search tool (max. 5 zoekopdrachten, locatie NL) en geeft `sources` terug; `ai.json()` levert die als `_sources`. Gebruikt door scannen, aanvullen en de knop "Prijs en scores opzoeken" (`refreshFromWeb()`). Vivino heeft geen officiële API; niet scrapen, Claude leest Vivino-pagina's via webzoeken.
 - Claude-prompts staan in `enrich()` (fles aanvullen; vult alleen lege velden) en `askClaude()` (keuze voor vanavond). Beide verwachten JSON terug.
+
+## Inloggen
+E-mail + wachtwoord (`signInWithPassword`), geen inlogmails: het gratis Supabase-plan verstuurt maar een paar mails per uur.
+Accounts maak je in Supabase onder Authentication → Users → Add user → Create new user, met **Auto Confirm User** aan.
+Wie de kast mag zien staat los daarvan in de tabel `allowed_users` (zie `supabase/schema.sql`).
 
 ## Lokaal draaien
 - Alleen front-end: `npx serve .` of `python3 -m http.server`, open http://localhost:3000 of :8000. Claude-knoppen zijn dan verborgen.

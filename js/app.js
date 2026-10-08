@@ -539,18 +539,21 @@ async function importBackup(file){
 }
 
 /* ---------- inloggen (alleen bij Supabase) ---------- */
-function viewLogin(sent){
+function viewLogin(){
   $('#addBtn').hidden=true; $('#scanBtn').hidden=true;
   $('#main').innerHTML=`<div class="card" style="max-width:440px;margin:24px auto">
     <h3>Inloggen</h3>
-    ${sent?`<p>Check je mail. Er staat een inloglink klaar voor <b>${h(sent)}</b>.</p>`:
-    `<p class="muted" style="margin-top:0">Je krijgt een inloglink per mail. Alleen adressen die in Supabase zijn toegestaan kunnen de kast zien.</p>
-    <form id="loginForm"><div class="field"><label for="f_email">E-mailadres</label><input id="f_email" name="email" type="email" autocomplete="email" required></div>
+    <p class="muted" style="margin-top:0">Log in met je e-mailadres en wachtwoord. Je blijft daarna ingelogd op dit apparaat.</p>
+    <form id="loginForm"><div class="field"><label for="f_email">E-mailadres</label><input id="f_email" name="email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="f_pw">Wachtwoord</label><input id="f_pw" name="password" type="password" autocomplete="current-password" required></div>
     <p id="loginErr" style="color:var(--over)" hidden></p>
-    <div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Stuur inloglink</button></div></form>`}</div>`;
-  const f=$('#loginForm'); if(!f) return;
-  f.onsubmit=async e=>{ e.preventDefault(); const email=f.email.value.trim();
-    try{ await store.signIn(email); viewLogin(email); }catch(x){ const el=$('#loginErr'); el.textContent=/rate limit/i.test(x.message||'')?'Er zijn net te veel inlogmails verstuurd. Probeer het over een uur opnieuw.':(x.message||'Versturen lukte niet'); el.hidden=false; } };
+    <div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Inloggen</button></div></form></div>`;
+  const f=$('#loginForm');
+  f.onsubmit=async e=>{ e.preventDefault(); const btn=f.querySelector('button'); btn.disabled=true;
+    try{ await store.signIn(f.email.value.trim(), f.password.value); }
+    catch(x){ const m=x.message||''; const el=$('#loginErr');
+      el.textContent=/invalid login credentials/i.test(m)?'E-mailadres of wachtwoord klopt niet.':/not confirmed/i.test(m)?'Dit account is nog niet bevestigd in Supabase.':(m||'Inloggen lukte niet');
+      el.hidden=false; btn.disabled=false; } };
 }
 
 /* ---------- start ---------- */

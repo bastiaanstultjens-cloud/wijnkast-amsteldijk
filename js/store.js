@@ -79,8 +79,8 @@
       document.addEventListener('visibilitychange', () => { if (!document.hidden) notifyAll(); });
     },
     needsLogin() { return !this.session; },
-    async signIn(email) {
-      const { error } = await this.client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+    async signIn(email, password) {
+      const { error } = await this.client.auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
     async signOut() { await this.client.auth.signOut(); },
@@ -132,7 +132,7 @@
     get mode() { return impl.mode; },
     init: () => impl.init(),
     needsLogin: () => impl.needsLogin(),
-    signIn: email => impl.signIn(email),
+    signIn: (email, password) => impl.signIn(email, password),
     signOut: () => impl.signOut && impl.signOut(),
     newId,
     shrinkImage,

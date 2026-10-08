@@ -18,8 +18,7 @@ Je hebt drie dingen nodig: een GitHub-repo, Supabase (gratis) voor de opslag en 
 ### 1. Supabase
 1. Maak een project op [supabase.com](https://supabase.com).
 2. Open **SQL Editor**, plak `supabase/schema.sql`, vervang onderaan het e-mailadres van Vivian en klik **Run**.
-3. Ga naar **Authentication → URL Configuration** en zet **Site URL** op je Vercel-adres (stap 3), bijvoorbeeld `https://wijnkast-amsteldijk.vercel.app`.
-4. Kopieer uit **Project Settings → API** de **Project URL** en de **anon public key** naar `config.js`.
+3. Kopieer uit **Project Settings → API** de **Project URL** en de **anon public key** naar `config.js`.
 
 ### 2. GitHub
 Zet deze map in een nieuwe repo (Claude Code kan dat voor je doen: "maak hier een git-repo van en push naar GitHub").
@@ -30,7 +29,10 @@ Zet deze map in een nieuwe repo (Claude Code kan dat voor je doen: "maak hier ee
    - `ANTHROPIC_API_KEY` — je sleutel van [console.anthropic.com](https://console.anthropic.com) (voor etiket scannen, aanvullen, prijs opzoeken en "Vanavond"). Zet in de Console webzoeken aan voor je organisatie als dat uit staat. Kosten: ongeveer 5 cent per fles voor het webzoeken plus de tokens.
    - `SUPABASE_URL` en `SUPABASE_ANON_KEY` — dezelfde waarden als in `config.js`, zodat alleen ingelogde gebruikers Claude kunnen aanroepen
    - optioneel `ANTHROPIC_MODEL` (standaard `claude-sonnet-5-5`)
-3. Deploy. Inloggen gaat met een link per mail.
+3. Deploy.
+
+### 4. Accounts
+In Supabase: **Authentication → Users → Add user → Create new user**. Vul e-mailadres en wachtwoord in en zet **Auto Confirm User** aan. Doe dit voor jezelf en voor Vivian. Daarna log je op de site in met e-mail en wachtwoord; je blijft ingelogd op dat apparaat.
 
 Zet de site op je telefoon via **Deel → Zet op beginscherm**, dan opent hij als een app.
 
