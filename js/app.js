@@ -550,7 +550,7 @@ function viewLogin(sent){
     <div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Stuur inloglink</button></div></form>`}</div>`;
   const f=$('#loginForm'); if(!f) return;
   f.onsubmit=async e=>{ e.preventDefault(); const email=f.email.value.trim();
-    try{ await store.signIn(email); viewLogin(email); }catch(x){ const el=$('#loginErr'); el.textContent=x.message||'Versturen lukte niet'; el.hidden=false; } };
+    try{ await store.signIn(email); viewLogin(email); }catch(x){ const el=$('#loginErr'); el.textContent=/rate limit/i.test(x.message||'')?'Er zijn net te veel inlogmails verstuurd. Probeer het over een uur opnieuw.':(x.message||'Versturen lukte niet'); el.hidden=false; } };
 }
 
 /* ---------- start ---------- */
