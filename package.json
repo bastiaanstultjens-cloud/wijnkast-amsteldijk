@@ -1,0 +1,10 @@
+{
+  "name": "wijnkast-amsteldijk",
+  "private": true,
+  "type": "module",
+  "description": "Overzicht van de wijnklimaatkast op de Amsteldijk",
+  "scripts": {
+    "dev": "vercel dev",
+    "serve": "python3 -m http.server 8000"
+  }
+}
