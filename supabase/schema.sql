@@ -1,6 +1,6 @@
 -- Wijnkast Amsteldijk — Supabase-schema
 -- Plak dit in Supabase > SQL Editor en klik Run.
--- Vervang daarna de e-mailadressen onderaan door die van jou en Vivian.
+-- Onderaan staan de e-mailadressen die mogen inloggen; voeg daar iemand toe als dat nodig is.
 
 -- 1. Alle data: één tabel met JSON-documenten per collectie
 create table if not exists public.docs (
@@ -52,5 +52,5 @@ create policy "etiketten_delete" on storage.objects for delete to authenticated
 -- 5. Toegestane gebruikers — PAS AAN
 insert into public.allowed_users (email) values
   ('bastiaan.stultjens@gmail.com'),
-  ('vivian@example.com')   -- vervang door het adres van Vivian
+  ('viviandegroot2000@gmail.com')
 on conflict do nothing;
