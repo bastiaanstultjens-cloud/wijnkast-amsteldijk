@@ -7,17 +7,24 @@
 // Body: { prompt, image?: data-URL, web?: true }. Met web:true zoekt Claude max. 5x op het web
 // ($10 per 1.000 zoekopdrachten bij Anthropic, dus max. ~5 cent per fles plus tokens).
 //   SUPABASE_URL, SUPABASE_ANON_KEY
-//                       als deze gezet zijn, accepteert de functie alleen ingelogde gebruikers
-//                       (anders kan iedereen met de link jouw API-tegoed gebruiken).
+//                       optioneel; standaard de waarden hieronder. De functie accepteert alleen ingelogde
+//                       gebruikers (anders kan iedereen met de link jouw API-tegoed gebruiken).
 
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 
+// Publieke Supabase-gegevens (dezelfde als in config.js). Omgevingsvariabelen gaan voor, maar alleen als ze
+// er geldig uitzien: een verkeerd geplakte waarde (bijv. met •••• erin) liet de functie eerder crashen.
+const SB_URL_DEFAULT = 'https://lgqlvmfaesiinoenoytg.supabase.co';
+const SB_KEY_DEFAULT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncWx2bWZhZXNpaW5vZW5veXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0ODIxNzIsImV4cCI6MjEwNzA1ODE3Mn0.nGkeVVmF2w9JnvnwoZ6AP-zukoZ1iCeqHr08JgnY9e4';
+const clean = v => String(v || '').trim();
+const envUrl = clean(process.env.SUPABASE_URL), envKey = clean(process.env.SUPABASE_ANON_KEY);
+const SB_URL = /^https:\/\/[\w.-]+$/.test(envUrl.replace(/\/$/, '')) ? envUrl.replace(/\/$/, '') : SB_URL_DEFAULT;
+const SB_KEY = /^[\x21-\x7e]+$/.test(envKey) && /^(eyJ|sb_)/.test(envKey) ? envKey : SB_KEY_DEFAULT;
+
 async function isLoggedIn(req) {
-  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return true; // geen Supabase: lokale/eigen setup
   const auth = req.headers.authorization || '';
   if (!auth.startsWith('Bearer ')) return false;
-  const r = await fetch(url.replace(/\/$/, '') + '/auth/v1/user', { headers: { Authorization: auth, apikey: key } });
+  const r = await fetch(SB_URL + '/auth/v1/user', { headers: { Authorization: auth, apikey: SB_KEY } });
   return r.ok;
 }
 
@@ -32,9 +39,10 @@ export default async function handler(req, res) {
   if (req.method === 'GET') return res.status(200).json({ enabled: !!key });
   if (req.method !== 'POST') return res.status(405).json({ error: 'Alleen POST' });
   if (!key) return res.status(501).json({ error: 'ANTHROPIC_API_KEY ontbreekt' });
+  if (!/^[\x21-\x7e]+$/.test(key.trim())) return res.status(500).json({ error: 'ANTHROPIC_API_KEY in Vercel bevat vreemde tekens (bijv. ••••). Plak de sleutel opnieuw en redeploy' });
   let loggedIn;
   try { loggedIn = await isLoggedIn(req); }
-  catch (e) { return res.status(500).json({ error: 'Inlogcontrole mislukte; klopt SUPABASE_URL in Vercel? (' + (e.message || e) + ')' }); }
+  catch (e) { return res.status(500).json({ error: 'Inlogcontrole mislukte; Supabase onbereikbaar? (' + (e.message || e) + ')' }); }
   if (!loggedIn) return res.status(401).json({ error: 'Log eerst in' });
 
   const prompt = String((req.body && req.body.prompt) || '').slice(0, 12000);
@@ -64,7 +72,7 @@ export default async function handler(req, res) {
     for (let round = 0; round < 4; round++) {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        headers: { 'x-api-key': key.trim(), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 3000,

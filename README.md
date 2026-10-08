@@ -27,7 +27,7 @@ Zet deze map in een nieuwe repo (Claude Code kan dat voor je doen: "maak hier ee
 1. Importeer de repo op [vercel.com/new](https://vercel.com/new). Geen framework, geen build-instellingen nodig.
 2. Voeg bij **Settings → Environment Variables** toe:
    - `ANTHROPIC_API_KEY` — je sleutel van [console.anthropic.com](https://console.anthropic.com) (voor etiket scannen, aanvullen, prijs opzoeken en "Vanavond"). Zet in de Console webzoeken aan voor je organisatie als dat uit staat. Kosten: ongeveer 5 cent per fles voor het webzoeken plus de tokens.
-   - `SUPABASE_URL` en `SUPABASE_ANON_KEY` — dezelfde waarden als in `config.js`, zodat alleen ingelogde gebruikers Claude kunnen aanroepen
+   - optioneel `SUPABASE_URL` en `SUPABASE_ANON_KEY` — alleen nodig als je een ander Supabase-project gebruikt dan in `api/claude.js` staat
    - optioneel `ANTHROPIC_MODEL` (standaard `claude-sonnet-5-5`)
 3. Deploy.
 
