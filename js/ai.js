@@ -12,8 +12,14 @@
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
       body: JSON.stringify({ prompt, image: imageDataUrl || undefined, web: !!opts.web }),
     });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || 'Claude gaf een fout (' + res.status + ')');
+    const raw = await res.text();
+    let body = {};
+    try { body = JSON.parse(raw); } catch (_) { /* Vercel-foutpagina of time-out */ }
+    if (!res.ok) {
+      if (body.error) throw new Error(body.error);
+      if (res.status === 504 || /TIMEOUT/.test(raw)) throw new Error('Claude deed er te lang over (time-out). Probeer het nog eens');
+      throw new Error('Claude gaf een fout (' + res.status + (raw ? ': ' + raw.slice(0, 120) : '') + ')');
+    }
     // Bronnen van webzoeken meegeven als _sources
     return body.sources && body.sources.length ? { ...body.data, _sources: body.sources } : body.data;
   }

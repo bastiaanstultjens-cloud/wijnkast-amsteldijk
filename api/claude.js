@@ -32,7 +32,10 @@ export default async function handler(req, res) {
   if (req.method === 'GET') return res.status(200).json({ enabled: !!key });
   if (req.method !== 'POST') return res.status(405).json({ error: 'Alleen POST' });
   if (!key) return res.status(501).json({ error: 'ANTHROPIC_API_KEY ontbreekt' });
-  if (!(await isLoggedIn(req))) return res.status(401).json({ error: 'Log eerst in' });
+  let loggedIn;
+  try { loggedIn = await isLoggedIn(req); }
+  catch (e) { return res.status(500).json({ error: 'Inlogcontrole mislukte; klopt SUPABASE_URL in Vercel? (' + (e.message || e) + ')' }); }
+  if (!loggedIn) return res.status(401).json({ error: 'Log eerst in' });
 
   const prompt = String((req.body && req.body.prompt) || '').slice(0, 12000);
   if (!prompt) return res.status(400).json({ error: 'Lege vraag' });
@@ -70,8 +73,10 @@ export default async function handler(req, res) {
           ...(tools ? { tools } : {}),
         }),
       });
-      const j = await r.json();
-      if (!r.ok) return res.status(502).json({ error: j.error?.message || 'Anthropic API-fout' });
+      const raw = await r.text();
+      let j;
+      try { j = JSON.parse(raw); } catch (_) { return res.status(502).json({ error: 'Onverwacht antwoord van Anthropic (' + r.status + '): ' + raw.slice(0, 200) }); }
+      if (!r.ok) return res.status(502).json({ error: 'Anthropic: ' + (j.error?.message || 'API-fout ' + r.status) }); 
       blocks = blocks.concat(j.content || []);
       if (j.stop_reason !== 'pause_turn') break;
       messages.push({ role: 'assistant', content: j.content });
@@ -92,6 +97,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ data: extractJson(text), sources, searches });
   } catch (e) {
-    return res.status(500).json({ error: e.message || 'Onbekende fout' });
+    return res.status(500).json({ error: 'Serverfout: ' + (e.message || 'onbekend') });
   }
 }
