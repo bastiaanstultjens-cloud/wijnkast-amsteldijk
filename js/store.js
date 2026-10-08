@@ -67,11 +67,24 @@
       this.client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
       const { data } = await this.client.auth.getSession();
       this.session = data.session;
+      if (this.session) {
+        // Bewaarde sessie van een verwijderd of verlopen account: opruimen in plaats van half ingelogd blijven.
+        const { error } = await this.client.auth.getUser();
+        if (error && (error.status === 401 || error.status === 403)) {
+          await this.client.auth.signOut({ scope: 'local' }).catch(() => {});
+          this.session = null;
+        }
+      }
+      // Niet herladen na inloggen: op iOS raakte de sessie daarbij soms kwijt. Alleen bij uitloggen opnieuw beginnen.
       this.client.auth.onAuthStateChange((evt, session) => {
-        const had = !!this.session; this.session = session;
-        if (!!session !== had) location.reload();
+        this.session = session;
+        if (evt === 'SIGNED_OUT' && this._live) location.reload();
       });
-      if (!this.session) return;
+      if (this.session) this._startLive();
+    },
+    _startLive() {
+      if (this._live) return;
+      this._live = true;
       let t = null;
       this.client.channel('docs-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'docs' }, () => { clearTimeout(t); t = setTimeout(notifyAll, 150); })
@@ -80,8 +93,10 @@
     },
     needsLogin() { return !this.session; },
     async signIn(email, password) {
-      const { error } = await this.client.auth.signInWithPassword({ email, password });
+      const { data, error } = await this.client.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      this.session = data.session;
+      this._startLive();
     },
     async signOut() { await this.client.auth.signOut(); },
     async list(col) {

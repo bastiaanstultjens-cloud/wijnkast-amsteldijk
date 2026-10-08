@@ -550,7 +550,7 @@ function viewLogin(){
     <div class="actions" style="margin-top:12px"><button class="btn primary" type="submit">Inloggen</button></div></form></div>`;
   const f=$('#loginForm');
   f.onsubmit=async e=>{ e.preventDefault(); const btn=f.querySelector('button'); btn.disabled=true;
-    try{ await store.signIn(f.email.value.trim(), f.password.value); }
+    try{ await store.signIn(f.email.value.trim(), f.password.value); state.loaded=false; render(); boot(); }
     catch(x){ const m=x.message||''; const el=$('#loginErr');
       el.textContent=/invalid login credentials/i.test(m)?'E-mailadres of wachtwoord klopt niet.':/not confirmed/i.test(m)?'Dit account is nog niet bevestigd in Supabase.':(m||'Inloggen lukte niet');
       el.hidden=false; btn.disabled=false; } };
@@ -562,11 +562,14 @@ render();
   try{ await store.init(); }
   catch(e){ state.loaded=true; state.canWrite=false; banner('Verbinden met de opslag lukte niet: '+(e.message||e)); render(); return; }
   if(store.needsLogin()){ state.loaded=true; renderTabs(); viewLogin(); return; }
+  boot();
+})();
+async function boot(){
   if(store.mode==='local') banner('Lokale modus: de kast wordt alleen in deze browser bewaard. Koppel Supabase om hem te delen (zie README).');
   state.canPhoto=true;
   state.ai = await ai.init();
   store.watch('bottles', list=>{ state.bottles=list; state.loaded=true; render(); });
   store.watch('log', list=>{ state.log=list.sort((a,b)=>String(b.openedOn||'').localeCompare(String(a.openedOn||''))); render(); });
   store.watchDoc('settings','kast', d=>{ if(d){ state.settings={top:d.top??8,bottom:d.bottom??14}; render(); } });
-})();
+}
 })();
