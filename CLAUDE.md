@@ -15,11 +15,12 @@ Bewust zonder build-stap: gewone HTML/CSS/JS, direct te hosten (Vercel, GitHub P
 | Bestand | Rol |
 |---|---|
 | `index.html` | Pagina-skelet, laadt alles in volgorde: config → supabase-js (CDN) → store → ai → app |
-| `styles.css` | Alle stijlen. Kleuren als tokens op `:root`, met donkere variant via `prefers-color-scheme` |
+| `styles.css` | Alle stijlen, in Apple/iOS-stijl (systeemlettertype, gegroepeerde lijsten). Kleuren als tokens op `:root`, met donkere variant via `prefers-color-scheme` |
 | `config.js` | Supabase URL + anon key. Leeg = lokale modus (localStorage) |
 | `js/store.js` | Opslaglaag `window.store` met twee implementaties: `local` en `supabase`. Zelfde API |
 | `js/ai.js` | `window.ai`: praat met `/api/claude`. `ai.init()` geeft `null` als die er niet is |
 | `js/app.js` | De app zelf: rendering (template strings), formulieren, drinkstatus, pairing |
+| `js/sheet-gestures.js` | Alleen gedrag: sheet omlaag vegen om te sluiten (iOS-stijl). Sluit via Escape; een formulier met invoer sluit niet door vegen |
 | `api/claude.js` | Vercel serverless function die de Anthropic API aanroept (sleutel blijft op de server) |
 | `supabase/schema.sql` | Tabel, RLS-regels, realtime, opslagbucket voor etiketfoto's |
 
