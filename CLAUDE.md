@@ -71,4 +71,5 @@ Wie de kast mag zien staat los daarvan in de tabel `allowed_users` (zie `supabas
 - Geen framework of bundler toevoegen zonder reden; de app moet als losse bestanden blijven werken.
 - Gebruikersinvoer altijd via `h()` escapen in templates.
 - Nieuwe velden: toevoegen aan `GROUPS` (formulier) en aan `openDetail()` (weergave), en hier in het datamodel.
+- Wijzig je `styles.css` of een JS-bestand, verhoog dan de `?v=`-datum in `index.html`, anders laden telefoons (vooral de app op het beginscherm) de oude versie uit hun cache.
 - Na wijzigingen: test toevoegen, verplaatsen, openen (logboek) en de back-up in lokale modus.
