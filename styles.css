@@ -322,3 +322,79 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
 .stat.hot b{color:var(--warn)}
 @media (max-width:620px){.stats{grid-template-columns:repeat(2,1fr)}}
 
+
+/* ---------- Liquid Glass ----------
+   Panelen, knoppen, tabbalk en sheets zijn van glas: ze laten een zachte wijnkleurige achtergrond doorschemeren,
+   met een lichtrand bovenin. De kast zelf blijft massief, zodat hij en de wijnen het meest opvallen. */
+:root{
+  --glass:rgba(255,255,255,.58); --glass-strong:rgba(255,255,255,.78); --glass-edge:rgba(255,255,255,.75);
+  --glass-hi:rgba(255,255,255,.9); --glass-lo:rgba(255,255,255,.25); --glass-shadow:0 10px 30px -8px rgba(60,20,40,.18),0 2px 6px rgba(60,20,40,.06);
+  --glass-tint:rgba(161,29,63,.82);
+  --amb-1:rgba(196,58,96,.30); --amb-2:rgba(140,90,200,.22); --amb-3:rgba(230,170,90,.20);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --glass:rgba(44,40,46,.46); --glass-strong:rgba(36,32,38,.72); --glass-edge:rgba(255,255,255,.16);
+  --glass-hi:rgba(255,255,255,.28); --glass-lo:rgba(255,255,255,.06); --glass-shadow:0 14px 34px -10px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.3);
+  --glass-tint:rgba(255,94,126,.78);
+  --amb-1:rgba(150,24,62,.55); --amb-2:rgba(90,40,150,.38); --amb-3:rgba(170,100,30,.22);
+}}
+:root[data-theme="dark"]{
+  --glass:rgba(44,40,46,.46); --glass-strong:rgba(36,32,38,.72); --glass-edge:rgba(255,255,255,.16);
+  --glass-hi:rgba(255,255,255,.28); --glass-lo:rgba(255,255,255,.06); --glass-shadow:0 14px 34px -10px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.3);
+  --glass-tint:rgba(255,94,126,.78);
+  --amb-1:rgba(150,24,62,.55); --amb-2:rgba(90,40,150,.38); --amb-3:rgba(170,100,30,.22);
+}
+/* zachte gloed achter alles, zodat het glas iets heeft om door te laten schemeren */
+body::before{content:"";position:fixed;inset:-10% -10% auto -10%;height:120vh;z-index:-1;pointer-events:none;
+  background:radial-gradient(45% 35% at 12% 6%,var(--amb-1),transparent 70%),radial-gradient(40% 32% at 92% 18%,var(--amb-2),transparent 70%),radial-gradient(50% 40% at 60% 78%,var(--amb-3),transparent 72%),radial-gradient(40% 30% at 5% 70%,var(--amb-2),transparent 70%)}
+body{position:relative;isolation:isolate}
+
+/* het glasmateriaal */
+.hero-stats,.card,.list,.dl,.window,.stat,.ai,.photo,
+.toolbar input,.toolbar select,.legend{
+  background-color:var(--glass);
+  background-image:linear-gradient(180deg,var(--glass-lo),transparent 42%);
+  -webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
+  border:1px solid var(--glass-edge);
+  box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 -1px 0 var(--glass-lo),var(--glass-shadow)}
+.hero-stats{border-radius:24px}
+.card,.list{border-radius:24px}
+.dl,.window{border-radius:20px}
+.legend{display:inline-flex;border-radius:999px;padding:7px 14px;margin-top:16px}
+.toolbar input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m15.5 15.5 5 5'/%3E%3C/svg%3E"),linear-gradient(180deg,var(--glass-lo),transparent 42%);background-repeat:no-repeat;background-position:12px 50%,0 0;background-size:16px,auto;border-radius:999px;padding-left:36px;min-height:44px}
+.toolbar select{border-radius:999px;min-height:44px;padding:8px 16px}
+.banner{background-color:var(--warn-bg);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-hi);border-radius:20px}
+
+/* glazen knoppen */
+.btn,.chip,.x,.btn.icon{background-color:var(--glass);background-image:linear-gradient(180deg,var(--glass-lo),transparent 55%);
+  -webkit-backdrop-filter:blur(20px) saturate(190%);backdrop-filter:blur(20px) saturate(190%);
+  border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-hi),0 4px 12px -4px rgba(0,0,0,.15)}
+.btn{border-radius:999px}
+.btn:active,.chip:active{background-color:var(--glass-strong)}
+.btn.primary,.chip[aria-pressed="true"]{background-color:var(--glass-tint);color:#fff;border-color:rgba(255,255,255,.35);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 20px -6px var(--glass-tint)}
+.btn.danger{background-color:var(--over-bg);color:var(--over)}
+
+/* zwevende tabbalk: helder glas met lichtrand en een glazen 'druppel' onder het actieve tabblad */
+nav.tabs{background-color:var(--glass);background-image:linear-gradient(180deg,var(--glass-lo),transparent 60%);
+  -webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
+  border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 -1px 0 var(--glass-lo),0 16px 40px -10px rgba(0,0,0,.35)}
+nav.tabs button[aria-current="page"]{background:var(--glass-strong);box-shadow:inset 0 1px 0 var(--glass-hi),0 2px 8px -2px rgba(0,0,0,.2)}
+
+/* sheet van glas */
+.sheet{background-color:var(--glass-strong);background-image:linear-gradient(180deg,var(--glass-lo),transparent 120px);
+  -webkit-backdrop-filter:blur(40px) saturate(190%);backdrop-filter:blur(40px) saturate(190%);
+  border:1px solid var(--glass-edge);border-bottom:0;box-shadow:inset 0 1px 0 var(--glass-hi),0 -20px 50px rgba(0,0,0,.25)}
+.overlay{background:rgba(0,0,0,.22)}
+.sheet .field input,.sheet .field select,.sheet textarea,.card textarea,.card .field input,.card .field select{background:var(--glass);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-lo)}
+.toast{background-color:var(--glass-strong);color:var(--ink);border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 30px rgba(0,0,0,.25)}
+
+/* de kast: massief, met een glanzende rand zodat hij uit het glas naar voren komt */
+.fridge{box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 0 0 1px rgba(255,255,255,.06),0 30px 60px -20px rgba(40,0,20,.6),0 8px 18px rgba(0,0,0,.25)}
+
+@media (prefers-reduced-transparency:reduce){
+  body::before{display:none}
+  .hero-stats,.card,.list,.dl,.window,.stat,.ai,.toolbar input,.toolbar select,.legend,.btn,.chip,.x,nav.tabs,.sheet,.toast,.banner{-webkit-backdrop-filter:none;backdrop-filter:none;background-color:var(--surface)}
+  .btn.primary,.chip[aria-pressed="true"]{background-color:var(--accent)}
+}
+@media (prefers-contrast:more){:root{--glass-edge:var(--line)}}
