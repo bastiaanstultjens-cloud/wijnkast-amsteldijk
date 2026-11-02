@@ -96,26 +96,29 @@ let renderLijstFocus=false;
 const STATUS_SHORT={haast:'Moet op',over:'Over',jong:'Te jong',piek:'Piek'};
 function slotHTML(s,m){
   const b=m[s];
-  if(!b) return `<button type="button" class="tile empty" data-slot="${s}" aria-label="Plek ${s}, leeg"><span class="plus" aria-hidden="true">+</span><span class="code-s">${s}</span></button>`;
+  if(!b) return `<button type="button" class="slot empty" data-slot="${s}" aria-label="Plek ${s}, leeg"><span class="cradle"><span class="plus" aria-hidden="true">+</span></span><span class="tag blank">${s}</span></button>`;
   const st=status(b), t=TYPES[b.type]||TYPES.rood;
-  const flag = STATUS_SHORT[st.k] ? `<span class="tflag ${st.k}">${STATUS_SHORT[st.k]}</span>`:'';
   const dim = state.highlight && !state.highlight.includes(b.id) ? ' dim':'';
   const v=vint(b), vy=/^\d{4}$/.test(v)?v:(v||'NV');
-  return `<button type="button" class="tile${t.light?' light':''}${dim}" style="--c:${tcol(b.type)}" data-bottle="${h(b.id)}" aria-label="Plek ${s}: ${h(title(b))} ${h(v)}, ${h(st.label)}">
-    ${flag}<span class="ty">${h(vy)}</span><span class="tp">${h(b.producer||b.cuvee||'Naamloos')}</span></button>`;
+  const flag = STATUS_SHORT[st.k] ? `<i class="sd ${st.k}" aria-hidden="true"></i>`:'';
+  return `<button type="button" class="slot${dim}" data-bottle="${h(b.id)}" aria-label="Plek ${s}: ${h(title(b))} ${h(v)}, ${h(st.label)}">
+    <span class="base${t.light?' light':''}" style="--c:${tcol(b.type)}"><span class="punt"></span></span>
+    <span class="tag">${flag}<b>${h(vy)}</b><small>${h(b.producer||b.cuvee||'Naamloos')}</small></span></button>`;
 }
 function fridgeHTML(){
   const m=bySlot(); const S=state.settings;
-  let out=`<section class="cellar" aria-label="De kast">
-    <button type="button" class="temps" id="panel" aria-label="Zonetemperaturen aanpassen: boven ${S.top} graden, onder ${S.bottom} graden">
-      <span><small>Boven</small><b class="num">${S.top}°</b></span><i></i><span><small>Onder</small><b class="num">${S.bottom}°</b></span></button>`;
+  let out=`<section class="fridge" aria-label="De wijnkast">
+    <button type="button" class="display" id="panel" aria-label="Zonetemperaturen aanpassen: boven ${S.top} graden, onder ${S.bottom} graden">
+      <span class="dz"><small>Boven</small><b class="num">${S.top}°</b></span><span class="logo">MOA</span><span class="dz"><small>Onder</small><b class="num">${S.bottom}°</b></span></button>
+    <div class="door"><div class="led" aria-hidden="true"></div>`;
   ROWS.forEach(r=>{
-    if(r.id==='1') out+=`<div class="zone"><h3>Boven</h3><span>Plank 1–3 · ${S.top}°C</span></div>`;
-    if(r.id==='4') out+=`<div class="zone"><h3>Onder</h3><span>Plank 4–6 en lade · ${S.bottom}°C</span></div>`;
+    if(r.id==='4') out+=`<div class="zone-split" aria-hidden="true"><span>${S.bottom}°</span></div>`;
     const cells=COLS.map(c=>slotHTML(r.id+c,m)).join('');
-    out+=`<div class="shelfrow${r.id==='L'?' drawer':''}"><span class="sl">${r.id==='L'?'Lade':r.id}</span><div class="tiles">${cells}</div></div>`;
+    out+= r.id==='L'
+      ? `<div class="rack drawer"><div class="row">${cells}</div><div class="drawer-front"><span>Lade</span></div></div>`
+      : `<div class="rack"><div class="row">${cells}</div><div class="shelf"><span>${r.id}</span></div></div>`;
   });
-  return out+`</section>`;
+  return out+`<div class="glare" aria-hidden="true"></div></div><div class="handle" aria-hidden="true"></div><div class="plinth" aria-hidden="true"></div></section>`;
 }
 function legendHTML(){
   return `<div class="legend">${Object.values(TYPES).map(t=>`<span><i style="background:var(${t.v})"></i>${t.label}</span>`).join('')}</div>`;
