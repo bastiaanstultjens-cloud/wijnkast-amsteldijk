@@ -15,7 +15,7 @@ Bewust zonder build-stap: gewone HTML/CSS/JS, direct te hosten (Vercel, GitHub P
 | Bestand | Rol |
 |---|---|
 | `index.html` | Pagina-skelet, laadt alles in volgorde: config → supabase-js (CDN) → store → ai → app |
-| `styles.css` | Alle stijlen, in Apple/iOS-stijl (systeemlettertype, gegroepeerde lijsten). Kleuren als tokens op `:root`, met donkere variant via `prefers-color-scheme` |
+| `styles.css` | Alle stijlen. Altijd donker thema ("kelder met wijngloed"): glazen panelen, Bricolage Grotesque voor koppen/cijfers, kast als raster van flessen-tegels (`.tile`), zwevende tabbalk. Kleuren als tokens op `:root` |
 | `config.js` | Supabase URL + anon key. Leeg = lokale modus (localStorage) |
 | `js/store.js` | Opslaglaag `window.store` met twee implementaties: `local` en `supabase`. Zelfde API |
 | `js/ai.js` | `window.ai`: praat met `/api/claude`. `ai.init()` geeft `null` als die er niet is |

@@ -93,47 +93,49 @@ function render(){
 }
 let renderLijstFocus=false;
 
-function capHTML(b){
-  const t=TYPES[b.type]||TYPES.rood;
-  return `<span class="cap ${t.light?'light':''}" style="--c:${tcol(b.type)}"><span class="inner">${h(vshort(b))}</span></span>`;
-}
+const STATUS_SHORT={haast:'Moet op',over:'Over',jong:'Te jong',piek:'Piek'};
 function slotHTML(s,m){
   const b=m[s];
-  if(!b) return `<button type="button" class="slot empty" data-slot="${s}" aria-label="Plek ${s}, leeg"><span class="ring">${s}</span></button>`;
-  const st=status(b), flag = ['haast','over','jong','piek'].includes(st.k) ? `<span class="flag ${st.k}"></span>`:'';
+  if(!b) return `<button type="button" class="tile empty" data-slot="${s}" aria-label="Plek ${s}, leeg"><span class="plus" aria-hidden="true">+</span><span class="code-s">${s}</span></button>`;
+  const st=status(b), t=TYPES[b.type]||TYPES.rood;
+  const flag = STATUS_SHORT[st.k] ? `<span class="tflag ${st.k}">${STATUS_SHORT[st.k]}</span>`:'';
   const dim = state.highlight && !state.highlight.includes(b.id) ? ' dim':'';
-  return `<button type="button" class="slot${dim}" data-bottle="${h(b.id)}" aria-label="Plek ${s}: ${h(title(b))} ${h(vint(b))}, ${h(st.label)}">${capHTML(b)}${flag}</button>`;
+  const v=vint(b), vy=/^\d{4}$/.test(v)?v:(v||'NV');
+  return `<button type="button" class="tile${t.light?' light':''}${dim}" style="--c:${tcol(b.type)}" data-bottle="${h(b.id)}" aria-label="Plek ${s}: ${h(title(b))} ${h(v)}, ${h(st.label)}">
+    ${flag}<span class="ty">${h(vy)}</span><span class="tp">${h(b.producer||b.cuvee||'Naamloos')}</span></button>`;
 }
 function fridgeHTML(){
   const m=bySlot(); const S=state.settings;
-  let out=`<div class="fridge"><button type="button" class="panel" id="panel" aria-label="Zonetemperaturen aanpassen">
-    <span class="lbl">BOVEN</span><span class="led num">${String(S.top).padStart(2,'0')}°</span><span class="sep"></span><span class="led num">${String(S.bottom).padStart(2,'0')}°</span><span class="lbl">ONDER</span></button><div class="glass">`;
-  out+=`<div class="zone-tag"><span>ZONE BOVEN</span><span>${S.top}°C</span></div>`;
-  ROWS.forEach((r,i)=>{
-    if(r.id==='4') out+=`<div class="zone-split"></div><div class="zone-tag"><span>ZONE ONDER</span><span>${S.bottom}°C</span></div>`;
+  let out=`<section class="cellar" aria-label="De kast">
+    <button type="button" class="temps" id="panel" aria-label="Zonetemperaturen aanpassen: boven ${S.top} graden, onder ${S.bottom} graden">
+      <span><small>Boven</small><b class="num">${S.top}°</b></span><i></i><span><small>Onder</small><b class="num">${S.bottom}°</b></span></button>`;
+  ROWS.forEach(r=>{
+    if(r.id==='1') out+=`<div class="zone"><h3>Boven</h3><span>Plank 1–3 · ${S.top}°C</span></div>`;
+    if(r.id==='4') out+=`<div class="zone"><h3>Onder</h3><span>Plank 4–6 en lade · ${S.bottom}°C</span></div>`;
     const cells=COLS.map(c=>slotHTML(r.id+c,m)).join('');
-    if(r.id==='L') out+=`<div class="drawer"><div class="tag">LADE</div><div class="rack">${cells}</div></div>`;
-    else out+=`<div class="rack">${cells}</div><div class="shelf"><span>${r.id}</span></div>`;
+    out+=`<div class="shelfrow${r.id==='L'?' drawer':''}"><span class="sl">${r.id==='L'?'Lade':r.id}</span><div class="tiles">${cells}</div></div>`;
   });
-  out+=`</div></div>`;
-  return out;
+  return out+`</section>`;
 }
 function legendHTML(){
-  return `<div class="legend">${Object.values(TYPES).map(t=>`<span><i style="background:var(${t.v})"></i>${t.label}</span>`).join('')}
-  <span><i style="background:#F0A63A"></i>Haast</span><span><i style="background:#E2614A"></i>Over venster</span><span><i style="background:#7E95AE"></i>Te jong</span><span><i style="background:#7ED3A4"></i>Op piek</span></div>`;
+  return `<div class="legend">${Object.values(TYPES).map(t=>`<span><i style="background:var(${t.v})"></i>${t.label}</span>`).join('')}</div>`;
 }
 function stats(){
   const k=inKast(); const value=k.reduce((a,b)=>a+(+b.marketValue||+b.price||0),0);
   const hot=k.filter(b=>['haast','over'].includes(status(b).k)).length;
-  return `<div class="stats">
-    <div class="stat"><span class="eyebrow">In de kast</span><b>${k.length}<span class="muted" style="font-size:16px"> / 28</span></b></div>
-    <div class="stat"><span class="eyebrow">Vrije plekken</span><b>${28-k.length}</b></div>
-    <div class="stat ${hot?'hot':''}"><span class="eyebrow">Met haast</span><b>${hot}</b></div>
-    <div class="stat"><span class="eyebrow">Waarde</span><b>${value?eur.format(value):'—'}</b></div></div>`;
+  return `<div class="hero-stats">
+    <div class="hs"><b class="num">${k.length}<small>/28</small></b><span>in de kast</span></div>
+    <div class="hs"><b class="num">${28-k.length}</b><span>vrij</span></div>
+    <div class="hs"><b class="num">${value?eur.format(value):'—'}</b><span>waarde</span></div>
+    ${hot?`<div class="hs hot"><b class="num">${hot}</b><span>moeten op</span></div>`:''}</div>`;
+}
+function chipHTML(b){
+  const t=TYPES[b.type]||TYPES.rood;
+  return `<span class="dot${t.light?' light':''}" style="--c:${tcol(b.type)}">${h(vshort(b))}</span>`;
 }
 function rowItem(b){
   const st=status(b);
-  return `<button type="button" class="rowitem" data-bottle="${h(b.id)}"><span class="dot" style="background:${tcol(b.type)}"></span>
+  return `<button type="button" class="rowitem" data-bottle="${h(b.id)}">${chipHTML(b)}
     <span class="t"><b>${h(title(b))}</b><span>${h([vint(b),b.region].filter(Boolean).join(' · '))}</span></span>
     <span class="pill ${st.k}">${h(st.label)}</span></button>`;
 }
@@ -180,7 +182,7 @@ function viewLijst(){
        ${topReg.length?`<div class="card"><h3>Per regio</h3><div class="bars">${topReg.map(([r,n])=>`<div class="bar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r)}</span><span class="track"><span class="fill" style="display:block;width:${n/max*100}%;background:var(--beech)"></span></span><span class="num">${n}</span></div>`).join('')}</div></div>`:''}
      </div>` : '';
   const items = list.map(b=>{const st=status(b); const t=TYPES[b.type]||TYPES.rood;
-    return `<button type="button" class="wine" data-bottle="${h(b.id)}"><span class="dot" style="background:${tcol(b.type)};color:${t.light?'#2a1d0e':'#fff'}">${h(vshort(b))}</span>
+    return `<button type="button" class="wine" data-bottle="${h(b.id)}">${chipHTML(b)}
       <span style="min-width:0"><h4>${h(title(b))}</h4><span class="meta">${h([vint(b),b.region||b.country,b.grapes].filter(Boolean).join(' · '))}</span></span>
       <span class="r"><span class="pill ${st.k}">${h(st.label)}</span><span class="code">${h(b.slot||'buiten')}</span></span></button>`;}).join('');
   return sum+`<div class="toolbar">
@@ -212,14 +214,14 @@ function viewVanavond(){
   let res='';
   if(d){
     const ranked=k.map(b=>({b,...dishScore(b,d)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,5);
-    res=`<div class="card"><h3>Uit de kast bij ${h(d.label.toLowerCase())}</h3>${ranked.length?ranked.map(x=>`<button type="button" class="rowitem" data-bottle="${h(x.b.id)}"><span class="dot" style="background:${tcol(x.b.type)}"></span><span class="t"><b>${h(title(x.b))} ${h(vint(x.b))}</b><span>${h(x.why||'')}</span></span><span class="code">${h(x.b.slot)}</span></button>`).join(''):'<p class="muted" style="margin:0">Niets in de kast dat hier echt bij past.</p>'}</div>`;
+    res=`<div class="card"><h3>Uit de kast bij ${h(d.label.toLowerCase())}</h3>${ranked.length?ranked.map(x=>`<button type="button" class="rowitem" data-bottle="${h(x.b.id)}">${chipHTML(x.b)}<span class="t"><b>${h(title(x.b))} ${h(vint(x.b))}</b><span>${h(x.why||'')}</span></span><span class="code">${h(x.b.slot)}</span></button>`).join(''):'<p class="muted" style="margin:0">Niets in de kast dat hier echt bij past.</p>'}</div>`;
   }
   let cl='';
   if(state.ai){
     const p=state.claudePicks;
     cl=`<div class="card"><h3>Vraag het Claude</h3><div class="field"><label for="dishText">Wat eten jullie, en wat is de gelegenheid?</label><textarea id="dishText" placeholder="Bijv. tarbot met beurre blanc, verjaardag van Vivian">${h(state.dishText||'')}</textarea></div>
       <div class="actions"><button class="btn primary" type="button" id="askClaude" ${state.claudeBusy||!k.length?'disabled':''}>${state.claudeBusy?'Claude kijkt in de kast…':'Kies een fles'}</button></div>
-      ${p?`<div style="margin-top:10px">${(p.picks||[]).map(x=>{const b=state.bottles.find(y=>y.id===x.id); return b?`<button type="button" class="rowitem" data-bottle="${h(b.id)}"><span class="dot" style="background:${tcol(b.type)}"></span><span class="t"><b>${h(title(b))} ${h(vint(b))}</b><span>${h(x.why)}</span></span><span class="code">${h(b.slot)}</span></button>`:'';}).join('')}${p.tip?`<p class="why" style="margin-top:8px">${h(p.tip)}</p>`:''}</div>`:''}
+      ${p?`<div style="margin-top:10px">${(p.picks||[]).map(x=>{const b=state.bottles.find(y=>y.id===x.id); return b?`<button type="button" class="rowitem" data-bottle="${h(b.id)}">${chipHTML(b)}<span class="t"><b>${h(title(b))} ${h(vint(b))}</b><span>${h(x.why)}</span></span><span class="code">${h(b.slot)}</span></button>`:'';}).join('')}${p.tip?`<p class="why" style="margin-top:8px">${h(p.tip)}</p>`:''}</div>`:''}
     </div>`;
   }
   return `<div class="card" style="margin-bottom:16px"><h3>Wat staat er op tafel?</h3><div class="chips">${DISHES.map(x=>`<button type="button" class="chip" data-dish="${x.k}" aria-pressed="${state.dish===x.k}">${x.label}</button>`).join('')}</div>
@@ -229,10 +231,10 @@ function viewVanavond(){
 
 function viewLog(){
   if(!state.log.length) return `<div class="card empty-state"><h3>Nog niets geopend</h3><p>Open je een fles, tik hem dan aan in de kast en kies “Geopend”. Je legt vast wanneer, met wie en bij welk gerecht. Zo leer je welke combinaties werken.</p></div>`;
-  return `<div class="list">${state.log.map(l=>`<div class="logitem"><div class="hd"><b>${h(title(l))} ${h(vint(l))}</b><span class="muted num" style="font-size:13px">${fmtDate(l.openedOn)}</span></div>
+  return `<div class="list">${state.log.map(l=>`<div class="logitem">${chipHTML(l)}<div class="lb"><div class="hd"><b>${h(title(l))} ${h(vint(l))}</b><span class="muted num" style="font-size:13px">${fmtDate(l.openedOn)}</span></div>
     <div class="muted" style="font-size:14px">${h([l.with&&'met '+l.with, l.dish&&'bij '+l.dish, l.occasion].filter(Boolean).join(' · '))}</div>
     ${l.pairingScore?`<div style="font-size:14px">Combinatie <span class="stars" aria-label="${l.pairingScore} van 5">${'★'.repeat(l.pairingScore)}${'☆'.repeat(5-l.pairingScore)}</span>${l.myScore?` · eigen score <b class="num">${h(l.myScore)}</b>`:''}</div>`:(l.myScore?`<div style="font-size:14px">Eigen score <b class="num">${h(l.myScore)}</b></div>`:'')}
-    ${l.tasting?`<div style="font-size:14px">${h(l.tasting)}</div>`:''}</div>`).join('')}</div>`;
+    ${l.tasting?`<div style="font-size:14px">${h(l.tasting)}</div>`:''}</div></div>`).join('')}</div>`;
 }
 
 /* ---------- events in main ---------- */
